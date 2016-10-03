@@ -28,20 +28,20 @@ public class Customers {
 	}
 
 	@Transformer(resultMimeType = "application/json")
-	public String toJson(Customers teams) throws IOException {
+	public String toJson(Customers customers) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
-		return mapper.writeValueAsString(teams);
+		return mapper.writeValueAsString(customers);
 	}
 
 	@Transformer(resultMimeType = "text/xml")
-	public String toXml(Customers teams) throws IOException, JAXBException {
+	public String toXml(Customers customers) throws IOException, JAXBException {
 		JAXBContext context = JAXBContext.newInstance(getClass());
 
 		Marshaller m = context.createMarshaller();
 		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
-		m.marshal(teams, boas);
+		m.marshal(customers, boas);
 
 		return new String(boas.toByteArray());
 	}
