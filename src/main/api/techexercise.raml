@@ -1,0 +1,68 @@
+#%RAML 1.0
+title: Tech Exercise
+version: v1.0
+baseUri: http://remote-vending/api
+mediaType: application/json
+documentation:
+  - title: Introduction
+    content: |
+      API to handle CRUD operations of customers.
+/customers:
+  post:
+    body:
+      example: |
+        {
+          "firstName" : "second",
+          "lastName" : "customer",
+          "id": 3
+           "addresses" :[{
+           "addressLine": "234 test st",
+           "postcode" : "2001", 
+           "type": "residential"
+           }
+           ]
+        }  
+  get:
+    responses:
+      200:
+        body:
+          example: |
+            {
+              "firstName" : "second",
+              "lastName" : "customer",
+              "id": 3
+               "addresses" :[{
+               "addressLine": "234 test st",
+               "postcode" : "2001", 
+               "type": "residential"
+               }
+              ]
+            }
+  /{customerId}:
+    put:
+      body:
+        example: |
+          {
+            "firstName" : "second",
+            "lastName" : "customer",          
+             "addresses" :[{
+             "addressLine": "345 test st",
+             "postcode" : "2001", 
+             "type": "residential"
+             }
+             ]
+          }
+    get:
+      responses:
+        200:
+          body:
+            example: |
+              {
+                "id": 1011
+              }
+    delete:
+      responses:
+        200:
+          body:
+            example: |
+              {}

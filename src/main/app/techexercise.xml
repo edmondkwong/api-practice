@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd">
+	<http:listener-config name="api-httpListenerConfig"
+		host="0.0.0.0" port="${http.port}" doc:name="HTTP Listener Configuration" />
+	<apikit:config name="api-config" raml="techexercise.raml"
+		consoleEnabled="false" doc:name="Router" />
+	<spring:beans>
+		<spring:bean id="customerRepository" class="repository.CustomerRepository">
+			<spring:property name="dataSource" ref="mysqlDS" />
+		</spring:bean>
+		<spring:bean id="mysqlDS" class="org.apache.commons.dbcp.BasicDataSource"
+			destroy-method="close">
+			<spring:property name="driverClassName" value="${jdbc.driverClassName}" />
+			<spring:property name="url" value="${jdbc.url}" />
+			<spring:property name="username" value="${jdbc.username}" />
+			<spring:property name="password" value="${jdbc.password}" />
+		</spring:bean>
+		<spring:bean class="techexercise.CompanyAPI" id="customerApi">
+			<spring:property name="customerRepository" ref="customerRepository" />
+		</spring:bean>
+	</spring:beans>
+	<flow name="api-main">
+		<http:listener config-ref="api-httpListenerConfig" path="/api/*"
+			doc:name="HTTP" />
+		<apikit:router config-ref="api-config" doc:name="APIkit Router" />
+		<exception-strategy ref="api-apiKitGlobalExceptionMapping"
+			doc:name="Reference Exception Strategy" />
+	</flow>
+	<flow name="api-console">
+		<http:listener config-ref="api-httpListenerConfig" path="/console/*"
+			doc:name="HTTP" />
+		<apikit:console config-ref="api-config" doc:name="APIkit Console" />
+	</flow>
+	<flow name="get:/customers:api-config">
+		<expression-component doc:name="get customers"><![CDATA[payload = app.registry['customerApi'].getCustomers();]]></expression-component>
+	</flow>
+	<flow name="get:/customers/{customerId}:api-config">
+		<expression-component doc:name="get customer by id"><![CDATA[payload = app.registry['customerApi'].getCustomerById(customerId);]]></expression-component>
+	</flow>
+	<flow name="post:/customers:api-config">
+		<json:json-to-object-transformer
+			doc:name="Convert JSON to Object" returnClass="model.Customer" />
+		<expression-component doc:name="add single customer"><![CDATA[app.registry['customerApi'].addCustomer(payload);]]></expression-component>
+		<set-payload doc:name="Set Payload to Null Payload" value="#[NullPayload.getInstance()]" />
+	</flow>
+	<flow name="delete:/customers/{customerId}:api-config">
+			<expression-component doc:name="delete single customer"><![CDATA[app.registry['customerApi'].deleteCustomer(customerId);]]></expression-component>
+		<set-payload value="#[NullPayload.getInstance()]" />
+	</flow>
+	<flow name="put:/customers/{customerId}:api-config">
+		<json:json-to-object-transformer
+			doc:name="Convert JSON to Object" returnClass="model.Customer" />
+		<expression-component doc:name="update single customer"><![CDATA[app.registry['customerApi'].updateCustomer(customerId, payload);]]></expression-component>
+		<set-payload value="#[NullPayload.getInstance()]" />
+	</flow>
+
+	<apikit:mapping-exception-strategy
+		name="api-apiKitGlobalExceptionMapping">
+		<apikit:mapping statusCode="404">
+			<apikit:exception
+				value="org.mule.module.apikit.exception.NotFoundException" />
+			<set-property propertyName="Content-Type" value="application/json"
+				doc:name="Property" />
+			<set-payload
+				value="{ &quot;message&quot;: &quot;Resource not found&quot; }"
+				doc:name="Set Payload" />
+		</apikit:mapping>
+		<apikit:mapping statusCode="405">
+			<apikit:exception
+				value="org.mule.module.apikit.exception.MethodNotAllowedException" />
+			<set-property propertyName="Content-Type" value="application/json"
+				doc:name="Property" />
+			<set-payload
+				value="{ &quot;message&quot;: &quot;Method not allowed&quot; }"
+				doc:name="Set Payload" />
+		</apikit:mapping>
+		<apikit:mapping statusCode="415">
+			<apikit:exception
+				value="org.mule.module.apikit.exception.UnsupportedMediaTypeException" />
+			<set-property propertyName="Content-Type" value="application/json"
+				doc:name="Property" />
+			<set-payload
+				value="{ &quot;message&quot;: &quot;Unsupported media type&quot; }"
+				doc:name="Set Payload" />
+		</apikit:mapping>
+		<apikit:mapping statusCode="406">
+			<apikit:exception
+				value="org.mule.module.apikit.exception.NotAcceptableException" />
+			<set-property propertyName="Content-Type" value="application/json"
+				doc:name="Property" />
+			<set-payload value="{ &quot;message&quot;: &quot;Not acceptable&quot; }"
+				doc:name="Set Payload" />
+		</apikit:mapping>
+		<apikit:mapping statusCode="400">
+			<apikit:exception
+				value="org.mule.module.apikit.exception.BadRequestException" />
+			<set-property propertyName="Content-Type" value="application/json"
+				doc:name="Property" />
+			<set-payload value="{ &quot;message&quot;: &quot;Bad request&quot; }"
+				doc:name="Set Payload" />
+		</apikit:mapping>
+	</apikit:mapping-exception-strategy>
+</mule>
