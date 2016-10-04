@@ -9,19 +9,18 @@ documentation:
       API to handle CRUD operations of customers.
 /customers:
   post:
-    body:
-      example: |
-        {
-          "firstName" : "second",
-          "lastName" : "customer",
-          "id": 3
-           "addresses" :[{
-           "addressLine": "234 test st",
-           "postcode" : "2001", 
-           "type": "residential"
-           }
-           ]
-        }  
+    responses:
+      200:
+        body:
+          example: |
+            {
+              "firstName" : "second",
+              "lastName" : "customer",
+               "addresses" :[{
+               "addressLine1": "234 test st"          
+               }
+               ]
+            }  
   get:
     responses:
       200:
@@ -36,7 +35,7 @@ documentation:
                "postcode" : "2001", 
                "type": "residential"
                }
-              ]
+               ]
             }
   /{customerId}:
     put:
@@ -58,7 +57,7 @@ documentation:
           body:
             example: |
               {
-                "id": 1011
+                "id": 1003
               }
     delete:
       responses:

@@ -44,8 +44,7 @@
 	<flow name="post:/customers:api-config">
 		<json:json-to-object-transformer
 			doc:name="Convert JSON to Object" returnClass="model.Customer" />
-		<expression-component doc:name="add single customer"><![CDATA[app.registry['customerApi'].addCustomer(payload);]]></expression-component>
-		<set-payload doc:name="Set Payload to Null Payload" value="#[NullPayload.getInstance()]" />
+		<expression-component doc:name="add single customer"><![CDATA[payload = app.registry['customerApi'].addCustomer(payload);]]></expression-component>
 	</flow>
 	<flow name="delete:/customers/{customerId}:api-config">
 			<expression-component doc:name="delete single customer"><![CDATA[app.registry['customerApi'].deleteCustomer(customerId);]]></expression-component>
@@ -57,7 +56,6 @@
 		<expression-component doc:name="update single customer"><![CDATA[app.registry['customerApi'].updateCustomer(customerId, payload);]]></expression-component>
 		<set-payload value="#[NullPayload.getInstance()]" />
 	</flow>
-
 	<apikit:mapping-exception-strategy
 		name="api-apiKitGlobalExceptionMapping">
 		<apikit:mapping statusCode="404">
